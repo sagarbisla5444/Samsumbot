@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, CallbackQueryHandler, ContextTypes, filters
 import re
-
+import os
 # =========================
 # CONFIG
 # =========================
@@ -311,7 +311,10 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # =========================
 # RUN
 # =========================
-TOKEN = "token"
+TOKEN = os.getenv("TOKEN")
+
+if not TOKEN:
+    raise ValueError("❌ TOKEN not found. Set it in environment variables.")
 
 app = ApplicationBuilder().token(TOKEN).build()
 
@@ -325,5 +328,6 @@ app.add_handler(CommandHandler("remove", remove))
 app.add_handler(CommandHandler("removeall", remove_all))
 app.add_handler(CommandHandler("reset", reset))
 
-print("🚀 Final Smart Bot Running...")
-app.run_polling()
+if __name__ == "__main__":
+    print("🚀 Final Smart Bot Running...")
+    app.run_polling()
