@@ -6,8 +6,8 @@ import os
 # =========================
 # CONFIG
 # =========================
-ROWS = ["fd", "gd", "gli", "ds"]
-COLS = ["neeraj","gulab","tangar","ak","kath","bkp","mohit","ludo","shis","lalit","bkaam","bunty","foldar","poli"]
+ROWS = ["db","shri","fd", "gd", "gli", "ds"]
+COLS = ["neeraj","gulab","tangar","ak","kath","bkp","mohit","ludo","shis","lalit","bkaam","bunty","foldar","poli","delhi"]
 
 # =========================
 # STORAGE (ROW → COLUMN)
