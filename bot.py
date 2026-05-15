@@ -235,42 +235,69 @@ async def sum_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Invalid row")
         return
 
-    totals = {}
+    # number -> column -> total
+    number_data = {}
+
     grand_total = 0
 
-    ak_totals = {}
-    ak_total = 0
-
+    # LOOP THROUGH ALL COLUMNS
     for col in COLS:
         for n, v in data[row][col]:
-            # MAIN TOTAL
-            totals[n] = totals.get(n, 0) + v
+
+            # CREATE NUMBER DICT
+            if n not in number_data:
+                number_data[n] = {}
+
+            # ADD COLUMN VALUE
+            number_data[n][col] = number_data[n].get(col, 0) + v
+
+            # GRAND TOTAL
             grand_total += v
 
-            # AK SEPARATE
-            if col == "ak":
-                ak_totals[n] = ak_totals.get(n, 0) + v
-                ak_total += v
+    # NO DATA
+    if not number_data:
+        await update.message.reply_text("No data")
+        return
 
-    # SORT
-    sorted_data = sorted(totals.items(), key=lambda x: x[1], reverse=True)
-    sorted_ak = sorted(ak_totals.items(), key=lambda x: x[1], reverse=True)
-
-    # FORMAT
-    main_msg = "\n".join([f"{n} → {v}" for n, v in sorted_data])
-    ak_msg = "\n".join([f"{n} → {v}" for n, v in sorted_ak])
-
-    final_msg = (
-        (main_msg or "No data") +
-        f"\n\n💰 TOTAL ({row}): {grand_total}\n\n"
-        "───── ****AK ONLY**** ─────\n" +
-        (ak_msg or "No AK data") +
-        f"\n\n💰 AK TOTAL: {ak_total}" +
-        command_help()
+    # SORT NUMBERS BY TOTAL VALUE
+    sorted_numbers = sorted(
+        number_data.items(),
+        key=lambda x: sum(x[1].values()),
+        reverse=True
     )
 
-    await update.message.reply_text(final_msg)
+    final_lines = []
 
+    # BUILD OUTPUT
+    for number, col_data in sorted_numbers:
+
+        # TOTAL OF NUMBER
+        num_total = sum(col_data.values())
+
+        # FIRST LINE
+        final_lines.append(f"{number} - {num_total}")
+
+        # SORT COLUMN VALUES
+        sorted_cols = sorted(
+            col_data.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        # COLUMN DETAILS
+        for col, val in sorted_cols:
+            final_lines.append(f"  {col} → {val}")
+
+        final_lines.append("")
+
+    # GRAND TOTAL
+    final_lines.append(f"🔥 GRAND TOTAL ({row}) → {grand_total}")
+
+    # SEND MESSAGE
+    await update.message.reply_text(
+        "\n".join(final_lines) + command_help()
+    )
+    
 # =========================
 # VIEW
 # =========================
