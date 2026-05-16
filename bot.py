@@ -267,6 +267,7 @@ async def sum_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     # TELEGRAM LIMIT FIX
+    final_msg += command_help()
     if len(final_msg) > 4000:
 
         chunks = [
@@ -347,6 +348,7 @@ async def sum_all_sep(update: Update, context: ContextTypes.DEFAULT_TYPE):
     final_msg += f"🔥 GRAND TOTAL ({row}) → {grand_total}"
 
     # TELEGRAM LIMIT FIX
+    final_msg += command_help()
     if len(final_msg) > 4000:
 
         chunks = [
