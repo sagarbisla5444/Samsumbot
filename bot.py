@@ -7,7 +7,7 @@ import os
 # CONFIG
 # =========================
 ROWS = ["db","shri","fd", "gd", "gli", "ds"]
-COLS = ["neeraj","gulab","tangar","ak","kath","bkp","mohit","ludo","shis","lalit","bkaam","bunty","foldar","poli","delhi"]
+COLS = ["neeraj","gulab","tangar","ak","kath","bkp","mohit","ludo","shis","lalit","bkaam","bunty","foldar","poli","delhi","R1","Jaguar"]
 
 # =========================
 # STORAGE (ROW → COLUMN)
@@ -30,6 +30,7 @@ def command_help():
         "/sum tangar fd → sum of one cell\n"
         "/sum tangar → sum of column\n"
         "/sumall fd → sum of row\n"
+        "/sumallsep fd → sum of row with separate data\n"
         "/view tangar fd → view entries\n"
         "/remove 12 10 → remove one entry\n"
         "/removeall 12 10 → remove all entries\n"
