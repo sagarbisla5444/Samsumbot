@@ -222,9 +222,10 @@ async def sum_cell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # =========================
-# SUM ALL ROW
+# SUM ALL ROW (SIMPLE)
 # =========================
 async def sum_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if len(context.args) != 1:
         await update.message.reply_text("Usage: /sumall fd")
         return
@@ -235,47 +236,99 @@ async def sum_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Invalid row")
         return
 
-    # number -> column -> total
-    number_data = {}
-
+    totals = {}
     grand_total = 0
 
     # LOOP THROUGH ALL COLUMNS
     for col in COLS:
+
         for n, v in data[row][col]:
 
-            # CREATE NUMBER DICT
+            totals[n] = totals.get(n, 0) + v
+
+            grand_total += v
+
+    # SORT
+    sorted_data = sorted(
+        totals.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    # FORMAT
+    msg = "\n".join(
+        [f"{n} → {v}" for n, v in sorted_data]
+    )
+
+    final_msg = (
+        (msg or "No data") +
+        f"\n\n🔥 GRAND TOTAL ({row}) → {grand_total}"
+    )
+
+    # TELEGRAM LIMIT FIX
+    if len(final_msg) > 4000:
+
+        chunks = [
+            final_msg[i:i+4000]
+            for i in range(0, len(final_msg), 4000)
+        ]
+
+        for chunk in chunks:
+            await update.message.reply_text(chunk)
+
+    else:
+        await update.message.reply_text(final_msg)
+
+
+# =========================
+# SUM ALL SEPARATE
+# =========================
+async def sum_all_sep(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if len(context.args) != 1:
+        await update.message.reply_text("Usage: /sumallsep fd")
+        return
+
+    row = context.args[0]
+
+    if row not in ROWS:
+        await update.message.reply_text("Invalid row")
+        return
+
+    number_data = {}
+    grand_total = 0
+
+    # COLLECT DATA
+    for col in COLS:
+
+        for n, v in data[row][col]:
+
             if n not in number_data:
                 number_data[n] = {}
 
-            # ADD COLUMN VALUE
             number_data[n][col] = number_data[n].get(col, 0) + v
 
-            # GRAND TOTAL
             grand_total += v
 
-    # NO DATA
     if not number_data:
         await update.message.reply_text("No data")
         return
 
-    # SORT NUMBERS BY TOTAL VALUE
+    # SORT BY TOTAL
     sorted_numbers = sorted(
         number_data.items(),
         key=lambda x: sum(x[1].values()),
         reverse=True
     )
 
-    final_lines = []
+    final_msg = ""
 
-    # BUILD OUTPUT
     for number, col_data in sorted_numbers:
 
-        # TOTAL OF NUMBER
         num_total = sum(col_data.values())
 
-        # FIRST LINE
-        final_lines.append(f"{number} - {num_total}")
+        # NUMBER TOTAL
+        final_msg += f"{number} - {num_total}\n"
 
         # SORT COLUMN VALUES
         sorted_cols = sorted(
@@ -286,18 +339,26 @@ async def sum_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # COLUMN DETAILS
         for col, val in sorted_cols:
-            final_lines.append(f"  {col} → {val}")
+            final_msg += f"  {col} → {val}\n"
 
-        final_lines.append("")
+        final_msg += "\n"
 
-    # GRAND TOTAL
-    final_lines.append(f"🔥 GRAND TOTAL ({row}) → {grand_total}")
+    final_msg += f"🔥 GRAND TOTAL ({row}) → {grand_total}"
 
-    # SEND MESSAGE
-    await update.message.reply_text(
-        "\n".join(final_lines) + command_help()
-    )
-    
+    # TELEGRAM LIMIT FIX
+    if len(final_msg) > 4000:
+
+        chunks = [
+            final_msg[i:i+4000]
+            for i in range(0, len(final_msg), 4000)
+        ]
+
+        for chunk in chunks:
+            await update.message.reply_text(chunk)
+
+    else:
+        await update.message.reply_text(final_msg)
+
 # =========================
 # VIEW
 # =========================
@@ -423,6 +484,7 @@ app.add_handler(CommandHandler("view", view))
 app.add_handler(CommandHandler("remove", remove))
 app.add_handler(CommandHandler("removeall", remove_all))
 app.add_handler(CommandHandler("reset", reset))
+app.add_handler(CommandHandler("sumallsep", sum_all_sep))
 
 
 if __name__ == "__main__":
